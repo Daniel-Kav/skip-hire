@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from 'react';
-import { CheckCircle, AlertTriangle, ArrowRight, ArrowLeft, MapPin, Trash2, Truck, Shield, Calendar, CreditCard, Filter } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { CheckCircle, AlertTriangle, ArrowRight, ArrowLeft, MapPin, Trash2, Truck, Shield, Calendar, CreditCard, Filter, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { skipData } from '@/data/skipData';
+import { fetchSkipsByLocation, type Skip } from '@/services/skipService';
 const ProgressStep = ({ step, title, isActive, isCompleted }: {
   step: number;
   title: string;
@@ -27,11 +28,11 @@ const ProgressStep = ({ step, title, isActive, isCompleted }: {
 );
 
 const SkipCard = ({ skip, isSelected, onSelect }: {
-  skip: typeof skipData[0];
+  skip: Skip;
   isSelected: boolean;
   onSelect: () => void;
 }) => {
-  const totalPrice = skip.price_before_vat * (1 + skip.vat / 100);
+  const totalPrice = skip.price_before_vat * (1 + (skip.vat || 20) / 100);
   
   return (
     <Card className={`relative cursor-pointer transition-all duration-300 hover:shadow-lg bg-gray-800 border-gray-700 ${
@@ -48,6 +49,7 @@ const SkipCard = ({ skip, isSelected, onSelect }: {
               const target = e.target as HTMLImageElement;
               target.src = '/images/8-yarder-skip.jpg'; // Default image
             }}
+            loading="lazy"
           />
           <Badge className="absolute top-3 right-3 bg-blue-500 text-white">
             {skip.size} Yards
@@ -119,7 +121,27 @@ const SkipCard = ({ skip, isSelected, onSelect }: {
 };
 
 const Index = () => {
-  const [selectedSkip, setSelectedSkip] = useState<number | null>(null);
+  const [selectedSkipId, setSelectedSkipId] = useState<number | null>(null);
+  const [postcode, setPostcode] = useState('NR32');
+  const [area, setArea] = useState('Lowestoft');
+
+  const { data: skipData = [], isLoading, isError, refetch } = useQuery({
+    queryKey: ['skips', postcode, area],
+    queryFn: () => fetchSkipsByLocation(postcode, area),
+    enabled: false, // Disable automatic fetching
+  });
+
+  useEffect(() => {
+    if (postcode && area) {
+      refetch();
+    }
+  }, [postcode, area, refetch]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    refetch();
+  };
+
   const [showFilters, setShowFilters] = useState(false);
   const [filterSizes, setFilterSizes] = useState<number[]>([]);
   const [filterPriceMin, setFilterPriceMin] = useState<string>('');
@@ -137,10 +159,11 @@ const Index = () => {
     { step: 6, title: 'Payment', isActive: false, isCompleted: false },
   ];
 
-  const selectedSkipData = selectedSkip ? skipData.find(s => s.id === selectedSkip) : null;
+  const selectedSkipData = skipData.find((skip: Skip) => skip.id === selectedSkipId) || null;
 
   const filteredSkips = useMemo(() => {
-    return skipData.filter(skip => {
+    if (isLoading || isError) return [];
+    return skipData.filter((skip: Skip) => {
       const skipPrice = skip.price_before_vat * (1 + skip.vat / 100);
       const minPrice = parseFloat(filterPriceMin);
       const maxPrice = parseFloat(filterPriceMax);
@@ -162,22 +185,22 @@ const Index = () => {
       }
       return true;
     });
-  }, [skipData, filterSizes, filterPriceMin, filterPriceMax, filterRoadLegal, filterHeavyWaste]);
+  }, [skipData, filterSizes, filterPriceMin, filterPriceMax, filterRoadLegal, filterHeavyWaste, isLoading, isError]);
 
   const sortedAndFilteredSkips = useMemo(() => {
     const skipsToProcess = [...filteredSkips]; // Create a new array from memoized filteredSkips
     switch (sortOption) {
       case 'price_asc':
-        skipsToProcess.sort((a, b) => (a.price_before_vat * (1 + a.vat / 100)) - (b.price_before_vat * (1 + b.vat / 100)));
+        skipsToProcess.sort((a: Skip, b: Skip) => (a.price_before_vat * (1 + a.vat / 100)) - (b.price_before_vat * (1 + b.vat / 100)));
         break;
       case 'price_desc':
-        skipsToProcess.sort((a, b) => (b.price_before_vat * (1 + b.vat / 100)) - (a.price_before_vat * (1 + a.vat / 100)));
+        skipsToProcess.sort((a: Skip, b: Skip) => (b.price_before_vat * (1 + b.vat / 100)) - (a.price_before_vat * (1 + a.vat / 100)));
         break;
       case 'size_asc':
-        skipsToProcess.sort((a, b) => a.size - b.size);
+        skipsToProcess.sort((a: Skip, b: Skip) => a.size - b.size);
         break;
       case 'size_desc':
-        skipsToProcess.sort((a, b) => b.size - a.size);
+        skipsToProcess.sort((a: Skip, b: Skip) => b.size - a.size);
         break;
       default:
         break;
@@ -195,52 +218,109 @@ const Index = () => {
     // setSortOption('price_asc'); 
   };
 
-  // Old sortSkips and filterSkips functions are no longer needed
-
+  const handleSelectSkip = (skipId: number) => {
+    setSelectedSkipId(skipId); {
+      // Handle next step
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-900">
       {/* Header with Progress Bar */}
       <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-4">
-            <h1 className="text-2xl font-bold text-white tracking-tight">Skip Hire</h1>
-            <Button 
-              variant="outline" 
-              className="md:hidden bg-gray-800 border-gray-700 text-white hover:bg-gray-700 ml-2"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <Filter className="w-5 h-5 mr-2" />
-              Filters
-            </Button>
-          </div>
-          {/* Progress Bar */}
-          <nav className="flex items-center justify-between space-x-0 overflow-x-auto pb-2">
-            {[
-              { icon: MapPin, label: 'Postcode' },
-              { icon: Trash2, label: 'Waste Type' },
-              { icon: Truck, label: 'Select Skip' },
-              { icon: Shield, label: 'Permit Check' },
-              { icon: Calendar, label: 'Choose Date' },
-              { icon: CreditCard, label: 'Payment' },
-            ].map((step, idx) => {
-              // Set progress: completed < 2, active === 2, rest upcoming
-              const isCompleted = idx < 2;
-              const isActive = idx === 2;
-              const Icon = step.icon;
-              return (
-                <div key={step.label} className="flex items-center">
-                  <div className={`flex items-center space-x-2 ${isActive ? 'text-blue-500' : isCompleted ? 'text-blue-700' : 'text-gray-500'}`}> 
-                    <Icon className={`w-5 h-5 ${isActive ? 'text-blue-500' : isCompleted ? 'text-blue-700' : 'text-gray-500'}`} />
-                    <span className={`text-sm font-medium ${isActive ? 'text-blue-500' : isCompleted ? 'text-blue-700' : 'text-gray-500'}`}>{step.label}</span>
-                  </div>
-                  {idx !== 5 && (
-                    <div className={`mx-2 w-8 h-0.5 ${isCompleted ? 'bg-blue-700' : isActive ? 'bg-blue-500' : 'bg-gray-700'}`}></div>
-                  )}
+          <div className="container mx-auto px-4 py-8">
+            <h1 className="text-3xl font-bold text-white mb-4">Skip Hire</h1>
+            
+            <form onSubmit={handleSearch} className="mb-8 bg-gray-800 p-4 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label htmlFor="postcode" className="block text-sm font-medium text-gray-300 mb-1">Postcode</label>
+                  <input
+                    type="text"
+                    id="postcode"
+                    value={postcode}
+                    onChange={(e) => setPostcode(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white"
+                    placeholder="Enter postcode"
+                    required
+                  />
                 </div>
-              );
-            })}
-          </nav>
+                <div>
+                  <label htmlFor="area" className="block text-sm font-medium text-gray-300 mb-1">Area</label>
+                  <input
+                    type="text"
+                    id="area"
+                    value={area}
+                    onChange={(e) => setArea(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white"
+                    placeholder="Enter area"
+                    required
+                  />
+                </div>
+                <div className="flex items-end">
+                  <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Loading...
+                      </>
+                    ) : 'Find Skips'}
+                  </Button>
+                </div>
+              </div>
+            </form>
+            
+            {isError && (
+              <div className="bg-red-900/30 border border-red-700 text-red-200 px-4 py-3 rounded mb-6">
+                Failed to load skip data. Please try again.
+              </div>
+            )}
+            
+            {!isLoading && !isError && skipData.length === 0 && (
+              <div className="bg-yellow-900/30 border border-yellow-700 text-yellow-200 px-4 py-3 rounded mb-6">
+                No skips available for the selected location. Please try a different postcode or area.
+              </div>
+            )}
+            <div className="flex items-center justify-between py-4">
+              <h1 className="text-2xl font-bold text-white tracking-tight">Skip Hire</h1>
+              <Button 
+                variant="outline" 
+                className="md:hidden bg-gray-800 border-gray-700 text-white hover:bg-gray-700 ml-2"
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                <Filter className="w-5 h-5 mr-2" />
+                Filters
+              </Button>
+            </div>
+            {/* Progress Bar */}
+            <nav className="flex items-center justify-between space-x-0 overflow-x-auto pb-2">
+              {[
+                { icon: MapPin, label: 'Postcode' },
+                { icon: Trash2, label: 'Waste Type' },
+                { icon: Truck, label: 'Select Skip' },
+                { icon: Shield, label: 'Permit Check' },
+                { icon: Calendar, label: 'Choose Date' },
+                { icon: CreditCard, label: 'Payment' },
+              ].map((step, idx) => {
+                // Set progress: completed < 2, active === 2, rest upcoming
+                const isCompleted = idx < 2;
+                const isActive = idx === 2;
+                const Icon = step.icon;
+                return (
+                  <div key={step.label} className="flex items-center">
+                    <div className={`flex items-center space-x-2 ${isActive ? 'text-blue-500' : isCompleted ? 'text-blue-700' : 'text-gray-500'}`}> 
+                      <Icon className={`w-5 h-5 ${isActive ? 'text-blue-500' : isCompleted ? 'text-blue-700' : 'text-gray-500'}`} />
+                      <span className={`text-sm font-medium ${isActive ? 'text-blue-500' : isCompleted ? 'text-blue-700' : 'text-gray-500'}`}>{step.label}</span>
+                    </div>
+                    {idx !== 5 && (
+                      <div className={`mx-2 w-8 h-0.5 ${isCompleted ? 'bg-blue-700' : isActive ? 'bg-blue-500' : 'bg-gray-700'}`}></div>
+                    )}
+                  </div>
+                );
+              })}
+            </nav>
+          </div>
         </div>
       </header>
 
@@ -421,12 +501,16 @@ const Index = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {sortedAndFilteredSkips.map((skip) => (
+              {isLoading ? (
+                <div className="col-span-3 flex justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                </div>
+              ) : sortedAndFilteredSkips.map((skip: Skip) => (
                 <SkipCard
                   key={skip.id}
                   skip={skip}
-                  isSelected={selectedSkip === skip.id}
-                  onSelect={() => setSelectedSkip(skip.id)}
+                  isSelected={selectedSkipId === skip.id}
+                  onSelect={() => setSelectedSkipId(skip.id)}
                 />
               ))}
             </div>
@@ -435,7 +519,7 @@ const Index = () => {
       </main>
 
       {/* Selected Skip Info */}
-      {selectedSkip && selectedSkipData && (
+      {selectedSkipId && selectedSkipData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
           <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 shadow-lg">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -445,7 +529,7 @@ const Index = () => {
                   <Button 
                     variant="ghost" 
                     className="text-white hover:text-blue-400"
-                    onClick={() => setSelectedSkip(null)}
+                    onClick={() => setSelectedSkipId(null)}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -483,7 +567,7 @@ const Index = () => {
                   <Button 
                     variant="outline" 
                     className="flex-1 bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
-                    onClick={() => setSelectedSkip(null)}
+                    onClick={() => setSelectedSkipId(null)}
                   >
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back
