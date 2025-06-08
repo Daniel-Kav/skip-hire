@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { CheckCircle, AlertTriangle, ArrowRight, ArrowLeft, MapPin, Trash2, Truck, Shield, Calendar, CreditCard, Filter, Loader2 } from 'lucide-react';
+import { MapPin, Trash2, Truck, Shield, Calendar, CreditCard, CheckCircle, Filter, ArrowRight, X, AlertTriangle, ArrowLeft, Loader2, Phone, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,16 +12,14 @@ const ProgressStep = ({ step, title, isActive, isCompleted }: {
   isCompleted: boolean;
 }) => (
   <div className="flex items-center space-x-2">
-    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
-      isCompleted ? 'bg-yellow-500 text-black' : 
-      isActive ? 'bg-blue-500 text-white' : 
-      'bg-gray-700 text-gray-400'
-    }`}>
+    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${isCompleted ? 'bg-yellow-500 text-black' :
+        isActive ? 'bg-blue-500 text-white' :
+          'bg-gray-700 text-gray-400'
+      }`}>
       {isCompleted ? <CheckCircle className="w-4 h-4" /> : step}
     </div>
-    <span className={`text-sm font-medium hidden sm:block ${
-      isActive ? 'text-blue-400' : isCompleted ? 'text-yellow-500' : 'text-gray-500'
-    }`}>
+    <span className={`text-sm font-medium hidden sm:block ${isActive ? 'text-blue-400' : isCompleted ? 'text-yellow-500' : 'text-gray-500'
+      }`}>
       {title}
     </span>
   </div>
@@ -33,14 +31,13 @@ const SkipCard = ({ skip, isSelected, onSelect }: {
   onSelect: () => void;
 }) => {
   const totalPrice = skip.price_before_vat * (1 + (skip.vat || 20) / 100);
-  
+
   return (
-    <Card className={`relative cursor-pointer transition-all duration-300 hover:shadow-lg bg-gray-800 border-gray-700 ${
-      isSelected ? 'ring-2 ring-blue-500 shadow-lg' : 'hover:shadow-md'
-    }`} onClick={onSelect}>
+    <Card className={`relative cursor-pointer transition-all duration-300 hover:shadow-lg bg-gray-800 border-gray-700 ${isSelected ? 'ring-2 ring-blue-500 shadow-lg' : 'hover:shadow-md'
+      }`} onClick={onSelect}>
       <CardContent className="p-0">
         <div className="relative">
-          <img 
+          <img
             src={`/images/${skip.size}-yarder-skip.jpg`}
             alt={`${skip.size} yard skip`}
             className="w-full h-48 object-cover rounded-t-lg"
@@ -66,13 +63,13 @@ const SkipCard = ({ skip, isSelected, onSelect }: {
             </div>
           )}
         </div>
-        
+
         <div className="p-4 space-y-3">
           <div>
             <h3 className="text-lg font-semibold text-white">{skip.size} Yard Skip</h3>
             <p className="text-sm text-gray-400">{skip.hire_period_days} day hire period</p>
           </div>
-          
+
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-400">Price (exc. VAT)</span>
@@ -89,7 +86,7 @@ const SkipCard = ({ skip, isSelected, onSelect }: {
               </div>
             </div>
           </div>
-          
+
           <div className="flex flex-wrap gap-2">
             {skip.allowed_on_road && (
               <Badge variant="secondary" className="text-xs bg-yellow-500 text-black">
@@ -102,13 +99,12 @@ const SkipCard = ({ skip, isSelected, onSelect }: {
               </Badge>
             )}
           </div>
-          
-          <Button 
-            className={`w-full mt-4 ${
-              isSelected 
-                ? 'bg-blue-500 hover:bg-blue-600 text-white' 
+
+          <Button
+            className={`w-full mt-4 ${isSelected
+                ? 'bg-blue-500 hover:bg-blue-600 text-white'
                 : 'bg-gray-700 hover:bg-gray-600 text-white border-gray-600'
-            }`}
+              }`}
             variant={isSelected ? "default" : "outline"}
           >
             {isSelected ? 'Selected' : 'Select This Skip'}
@@ -230,53 +226,13 @@ const Index = () => {
       <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold text-white mb-4">Skip Hire</h1>
-            
-            <form onSubmit={handleSearch} className="mb-8 bg-gray-800 p-4 rounded-lg">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label htmlFor="postcode" className="block text-sm font-medium text-gray-300 mb-1">Postcode</label>
-                  <input
-                    type="text"
-                    id="postcode"
-                    value={postcode}
-                    onChange={(e) => setPostcode(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white"
-                    placeholder="Enter postcode"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="area" className="block text-sm font-medium text-gray-300 mb-1">Area</label>
-                  <input
-                    type="text"
-                    id="area"
-                    value={area}
-                    onChange={(e) => setArea(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white"
-                    placeholder="Enter area"
-                    required
-                  />
-                </div>
-                <div className="flex items-end">
-                  <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Loading...
-                      </>
-                    ) : 'Find Skips'}
-                  </Button>
-                </div>
-              </div>
-            </form>
-            
+
             {isError && (
               <div className="bg-red-900/30 border border-red-700 text-red-200 px-4 py-3 rounded mb-6">
                 Failed to load skip data. Please try again.
               </div>
             )}
-            
+
             {!isLoading && !isError && skipData.length === 0 && (
               <div className="bg-yellow-900/30 border border-yellow-700 text-yellow-200 px-4 py-3 rounded mb-6">
                 No skips available for the selected location. Please try a different postcode or area.
@@ -284,8 +240,8 @@ const Index = () => {
             )}
             <div className="flex items-center justify-between py-4">
               <h1 className="text-2xl font-bold text-white tracking-tight">Skip Hire</h1>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="md:hidden bg-gray-800 border-gray-700 text-white hover:bg-gray-700 ml-2"
                 onClick={() => setShowFilters(!showFilters)}
               >
@@ -309,7 +265,7 @@ const Index = () => {
                 const Icon = step.icon;
                 return (
                   <div key={step.label} className="flex items-center">
-                    <div className={`flex items-center space-x-2 ${isActive ? 'text-blue-500' : isCompleted ? 'text-blue-700' : 'text-gray-500'}`}> 
+                    <div className={`flex items-center space-x-2 ${isActive ? 'text-blue-500' : isCompleted ? 'text-blue-700' : 'text-gray-500'}`}>
                       <Icon className={`w-5 h-5 ${isActive ? 'text-blue-500' : isCompleted ? 'text-blue-700' : 'text-gray-500'}`} />
                       <span className={`text-sm font-medium ${isActive ? 'text-blue-500' : isCompleted ? 'text-blue-700' : 'text-gray-500'}`}>{step.label}</span>
                     </div>
@@ -323,6 +279,16 @@ const Index = () => {
           </div>
         </div>
       </header>
+
+      {/* Disclaimer Strip */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="text-center">
+            <p className="text-sm text-gray-400">
+              Images and information shown throughout this website may not reflect the exact shape or size specification.
+              Colours may vary. Options and/or accessories may be featured at additional cost.
+            </p>
+          </div>
+        </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -341,9 +307,9 @@ const Index = () => {
                           className="rounded border-gray-600 text-blue-500 focus:ring-blue-500"
                           checked={filterSizes.includes(size)}
                           onChange={() => {
-                            setFilterSizes(prevSizes => 
-                              prevSizes.includes(size) 
-                                ? prevSizes.filter(s => s !== size) 
+                            setFilterSizes(prevSizes =>
+                              prevSizes.includes(size)
+                                ? prevSizes.filter(s => s !== size)
                                 : [...prevSizes, size]
                             );
                           }}
@@ -373,7 +339,7 @@ const Index = () => {
                     />
                   </div>
                 </div>
-                <Button 
+                <Button
                   variant="outline"
                   className="w-full mt-6 bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
                   onClick={handleClearFilters}
@@ -400,9 +366,9 @@ const Index = () => {
                           className="rounded border-gray-600 text-blue-500 focus:ring-blue-500"
                           checked={filterSizes.includes(size)}
                           onChange={() => {
-                            setFilterSizes(prevSizes => 
-                              prevSizes.includes(size) 
-                                ? prevSizes.filter(s => s !== size) 
+                            setFilterSizes(prevSizes =>
+                              prevSizes.includes(size)
+                                ? prevSizes.filter(s => s !== size)
                                 : [...prevSizes, size]
                             );
                           }}
@@ -462,7 +428,7 @@ const Index = () => {
                     </label>
                   </div>
                 </div>
-                <Button 
+                <Button
                   variant="outline"
                   className="w-full mt-6 bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
                   onClick={handleClearFilters}
@@ -479,7 +445,7 @@ const Index = () => {
               <h2 className="text-xl font-bold text-white mb-4 sm:mb-0">Available Skips</h2>
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-gray-400">Sort by:</span>
-                <select 
+                <select
                   className="bg-gray-800 border border-gray-700 text-white text-sm rounded-md px-3 py-1.5"
                   value={sortOption}
                   onChange={(e) => setSortOption(e.target.value)}
@@ -489,8 +455,8 @@ const Index = () => {
                   <option value="size_asc">Size: Small to Large</option>
                   <option value="size_desc">Size: Large to Small</option>
                 </select>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="lg:hidden bg-gray-800 border-gray-700 text-white hover:bg-gray-700 ml-2"
                   onClick={() => setShowFilters(!showFilters)}
                 >
@@ -518,84 +484,149 @@ const Index = () => {
         </div>
       </main>
 
-      {/* Selected Skip Info */}
+      {/* Selected Skip Info - Modern Modal */}
       {selectedSkipId && selectedSkipData && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
-          <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 shadow-lg">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-              <div className="flex flex-col space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-bold text-white">Selected Skip</h3>
-                  <Button 
-                    variant="ghost" 
-                    className="text-white hover:text-blue-400"
-                    onClick={() => setSelectedSkipId(null)}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </Button>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2">
-                      <div className="text-sm text-gray-400">Size:</div>
-                      <div className="font-semibold text-white text-lg">
-                        {selectedSkipData.size} Yard Skip
+        <div className="fixed inset-0 z-50">
+          {/* Backdrop with blur */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
+            onClick={() => setSelectedSkipId(null)}
+          />
+
+          {/* Modal Panel */}
+          <div className="absolute bottom-0 left-0 right-0 lg:inset-0 lg:m-auto lg:max-w-4xl lg:max-h-[80vh] lg:rounded-2xl bg-gray-800 border border-gray-700 shadow-2xl transform transition-all duration-300 ease-out translate-y-0 max-h-[90vh] overflow-y-auto">
+            {/* Handle bar - Mobile only */}
+            <div className="lg:hidden flex justify-center py-2 cursor-pointer" onClick={() => setSelectedSkipId(null)}>
+              <div className="w-12 h-1 bg-gray-600 rounded-full"></div>
+            </div>
+
+            <div className="p-6 lg:p-8">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+                  Your Selected Skip
+                </h3>
+                <button
+                  onClick={() => setSelectedSkipId(null)}
+                  className="p-2 -mr-2 rounded-full hover:bg-gray-700 transition-colors"
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5 text-gray-400 hover:text-white" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Skip Details */}
+                <div className="bg-gray-700/50 rounded-xl p-5">
+                  <h4 className="text-lg font-semibold text-white mb-4">Your Selection</h4>
+                  <div className="flex items-start space-x-4">
+                    <div className="w-24 h-24 bg-gray-600 rounded-lg overflow-hidden flex-shrink-0">
+                      <img
+                        src={`/images/${selectedSkipData.size}-yarder-skip.jpg`}
+                        alt={`${selectedSkipData.size} yard skip`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-white">{selectedSkipData.size} Yard Skip</h3>
+                      <p className="text-gray-300 text-sm mt-1">
+                        {selectedSkipData.hire_period_days} days hire period
+                      </p>
+                      <div className="mt-2 flex items-center space-x-2">
+                        {selectedSkipData.allows_heavy_waste && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-500/20 text-yellow-300">
+                            Heavy Waste Allowed
+                          </span>
+                        )}
+                        {selectedSkipData.allowed_on_road && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-500/20 text-blue-300">
+                            Road Legal
+                          </span>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2 mt-2">
-                      <div className="text-sm text-gray-400">Duration:</div>
-                      <div className="font-semibold text-white text-lg">
-                        {selectedSkipData.hire_period_days} days
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex-1 text-right">
-                    <div className="text-2xl font-bold text-blue-400">
-                      £{(selectedSkipData.price_before_vat * (1 + selectedSkipData.vat / 100)).toFixed(0)}
-                    </div>
-                    <div className="text-sm text-gray-400">
-                      Total (inc. VAT)
+                    <div className="text-right">
+                      <span className="text-2xl font-bold text-white">
+                        £{selectedSkipData.price_before_vat.toFixed(2)}
+                      </span>
+                      <p className="text-xs text-gray-400">+VAT</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                  <Button 
-                    variant="outline" 
-                    className="flex-1 bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
-                    onClick={() => setSelectedSkipId(null)}
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back
-                  </Button>
-                  <Button 
-                    className="flex-1 bg-blue-500 hover:bg-blue-600"
-                    onClick={() => {/* Handle continue */}}
-                  >
-                    Continue
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
+                {/* Price Summary */}
+                <div className="bg-gray-700/50 rounded-xl p-5">
+                  <h4 className="text-lg font-semibold text-white mb-4">Price Summary</h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Skip Hire ({selectedSkipData.hire_period_days} days)</span>
+                      <span className="text-white">£{selectedSkipData.price_before_vat.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">VAT ({selectedSkipData.vat || 20}%)</span>
+                      <span className="text-white">£{(selectedSkipData.price_before_vat * (selectedSkipData.vat || 20) / 100).toFixed(2)}</span>
+                    </div>
+                    {selectedSkipData.transport_cost && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-300">Delivery Fee</span>
+                        <span className="text-white">£{selectedSkipData.transport_cost.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="h-px bg-gray-600 my-2"></div>
+                    <div className="flex justify-between">
+                      <span className="text-lg font-semibold text-white">Total</span>
+                      <span className="text-xl font-bold text-blue-400">
+                        £{(
+                          selectedSkipData.price_before_vat * (1 + (selectedSkipData.vat || 20) / 100) +
+                          (selectedSkipData.transport_cost || 0)
+                        ).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6 space-y-3">
+                    <Button
+                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 text-base font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                      onClick={() => {
+                        // Update progress to Permit Check step (index 3)
+                        // You'll need to implement this state management
+                      }}
+                    >
+                      Check if you need a permit
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-gray-500 py-3 text-base font-medium rounded-lg"
+                      onClick={() => setSelectedSkipId(null)}
+                    >
+                      Back to skips
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Help Section */}
+                <div className="bg-gray-700/50 rounded-xl p-5">
+                  <h4 className="text-lg font-semibold text-white mb-3">Need help?</h4>
+                  <p className="text-gray-300 text-sm mb-4">
+                    Our team is available 7 days a week to answer any questions you may have.
+                  </p>
+                  <div className="flex items-center space-x-4">
+                    <a href="tel:+441234567890" className="flex items-center text-blue-400 hover:text-blue-300">
+                      <Phone className="w-4 h-4 mr-2" />
+                      <span className="text-sm">01234 567 890</span>
+                    </a>
+                    <a href="mailto:help@skiphire.com" className="flex items-center text-blue-400 hover:text-blue-300">
+                      <Mail className="w-4 h-4 mr-2" />
+                      <span className="text-sm">help@skiphire.com</span>
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       )}
-
-      {/* Sticky Disclaimer Only */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 shadow-lg z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <div className="border-t border-gray-700 pt-2 sm:pt-0">
-            <p className="text-xs text-gray-500 leading-relaxed">
-              Images and information shown throughout this website may not reflect the exact shape or size specification.
-            </p>
-          </div>
-        </div>
-      </div>
 
       {/* Footer */}
       <footer className="bg-gray-800 border-t border-gray-700 mt-12">
