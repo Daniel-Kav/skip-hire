@@ -2,7 +2,7 @@
 
 A modern, responsive web application for browsing and hiring different sizes of skips. Built with React, TypeScript, and shadcn/ui components.
 
-![Skip Hire Application Preview](/public/images/skip-hire-preview.jpg)
+![Skip Hire Application Preview](/public/images/skip-hire-preview.png)
 
 ## Features
 
@@ -12,6 +12,7 @@ A modern, responsive web application for browsing and hiring different sizes of 
 - **Real-time Pricing**: See prices including VAT in real-time
 - **Progress Tracking**: Visual progress indicator through the booking process
 - **Modern UI**: Clean, dark-themed interface with smooth animations
+- **Highly Modular Codebase**: All major UI sections are reusable components
 
 ## Technologies Used
 
@@ -28,14 +29,14 @@ A modern, responsive web application for browsing and hiring different sizes of 
 ### Prerequisites
 
 - Node.js (v16 or higher)
-- npm or yarn package manager
+- npm, yarn, or pnpm package manager
 
 ### Installation
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd skip-smart
+   git clone https://github.com/Daniel-Kav/skip-hire
+   cd skip-hire
    ```
 
 2. Install dependencies:
@@ -43,6 +44,8 @@ A modern, responsive web application for browsing and hiring different sizes of 
    npm install
    # or
    yarn install
+   # or
+   pnpm install
    ```
 
 3. Start the development server:
@@ -50,6 +53,8 @@ A modern, responsive web application for browsing and hiring different sizes of 
    npm run dev
    # or
    yarn dev
+   # or
+   pnpm dev
    ```
 
 4. Open [http://localhost:5173](http://localhost:5173) in your browser.
@@ -58,13 +63,32 @@ A modern, responsive web application for browsing and hiring different sizes of 
 
 ```
 src/
-├── components/     # Reusable UI components
-├── data/          # Application data
-├── hooks/         # Custom React hooks
-├── lib/           # Utility functions
-├── pages/         # Page components
-└── App.tsx        # Main application component
+├── components/         # Reusable UI components
+│   ├── SkipCard.tsx    # Card for displaying a skip
+│   ├── SkipFilters.tsx # Sidebar and mobile filters
+│   ├── SkipModal.tsx   # Modal for selected skip details
+│   ├── ProgressBar.tsx # Progress bar for booking steps
+│   ├── Footer.tsx      # App footer
+│   └── Disclaimer.tsx  # Disclaimer strip
+│   └── ...             # Other UI and utility components
+├── pages/              # Page components (e.g., Index.tsx)
+├── services/           # API and data fetching logic
+├── hooks/              # Custom React hooks
+├── utils/              # Utility functions
+├── lib/                # Shared libraries
+└── index.css           # Global styles
 ```
+
+## Main Components
+
+- **SkipCard**: Displays a skip's details and selection button.
+- **SkipFilters**: Sidebar and mobile filter controls for skip size, price, and features.
+- **SkipModal**: Modal dialog showing selected skip details and price summary.
+- **ProgressBar**: Visual indicator of the booking process steps.
+- **Footer**: Application footer.
+- **Disclaimer**: Informational disclaimer strip.
+
+All components are designed to be reusable and accept props for customization.
 
 ## Available Scripts
 
@@ -75,7 +99,7 @@ src/
 
 ## Data Structure
 
-The skip data is stored in `src/data/skipData.ts` and follows this structure:
+Skip data is fetched via `src/services/skipService.ts` and follows this structure:
 
 ```typescript
 interface Skip {
@@ -86,25 +110,20 @@ interface Skip {
   hire_period_days: number;  // Number of days for hire
   allowed_on_road: boolean;  // If the skip can be placed on the road
   allows_heavy_waste: boolean; // If the skip can hold heavy waste
+  transport_cost?: number;   // Optional delivery fee
 }
 ```
 
-## Features in Detail
+## Best Practices
 
-### Skip Filtering
-- Filter skips by size (4yd to 40yd)
-- Set price range filters
-- Filter by road legal status
-- Filter by heavy waste allowance
-
-### Sorting Options
-- Sort by price (low to high / high to low)
-- Sort by size (small to large / large to small)
-
-### Responsive Design
-- Mobile-first approach
-- Collapsible filters for smaller screens
-- Adaptive layout for different screen sizes
+- **Componentization**: Keep UI logic in components under `src/components/`. Each major UI section is a separate file.
+- **Props & State**: Pass only necessary props. Use hooks for shared logic.
+- **Styling**: Use Tailwind CSS utility classes. Extract repeated classNames if needed.
+- **Testing**: Add tests for components and logic as the app grows.
+- **Accessibility**: Use semantic HTML and ARIA attributes for interactive elements.
+- **Documentation**: Document component props and complex logic with TypeScript and comments.
+- **Performance**: Use `React.memo`, `useMemo`, and `useCallback` for optimization where needed.
+- **Consistent Imports**: Use path aliases (e.g., `@/components/SkipCard`) for maintainability.
 
 ## Contributing
 
